@@ -2,5 +2,5 @@
 
 ## Install Hashicorp products
 
-`./install_hc_product.sh <product> <version> <architecture>`
+`./install_hc_product.sh <product> <version> <OS> <architecture>`
   
