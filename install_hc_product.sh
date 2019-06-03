@@ -6,6 +6,7 @@
 # check input arguments
 if [ "$#" != 4 ]; then
     echo "usage: install_sh_product.sh <product> <version> <OS> <architecture>"
+    exit 1
 fi
 
 # construct vars
