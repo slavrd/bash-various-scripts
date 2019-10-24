@@ -1,31 +1,38 @@
 #!/usr/bin/env bash
-# Installs a given Hashicorp product
+# Installs a given Hashicorp product.
 
 # Usage - provide product, version, operating system, architecture as arguments in that order.
+# The version can be provided as 'latest' in which case the script will determine and install the latest version.
+# The OS and Architecture arguments are optional and will default to 'linux' and 'amd64' respectively.
 
 # check input arguments
-if [ "$#" != 4 ]; then
-    echo "usage: install_sh_product.sh <product> <version> <OS> <architecture>"
+if [ "$#" -lt 1 ]; then
+    echo "usage: install_sh_product.sh <product> [<version> [<OS> [architecture]]]"
     exit 1
 fi
 
+# install needed packages
+PKGS='wget unzip jq'
+which wget ${PKGS} jq>>/dev/null || {
+    sudo apt-get update >>/dev/null
+    sudo apt-get install -y ${PKGS}>>/dev/null
+}
+
 # construct vars
 PRODUCT="$1"
-VER="$2"
-OS="$3"
-ARCH="$4"
+
+[ -z "$2" ] && VER="latest" || VER="$2"
+[ "$VER" == "latest" ] && VER=$(curl -sSf https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r '.current_version')
+
+[ -z "$3" ] &&  OS='linux' || OS="$3"
+[ -z "$4" ] && ARCH='amd64' || ARCH="$4"
+
 FILE="${PRODUCT}_${VER}_${OS}_${ARCH}.zip"
 URL="https://releases.hashicorp.com/$PRODUCT/$VER/$FILE"
 
-# install needed packages
-which wget unzip >>/dev/null || {
-    sudo apt-get update >>/dev/null
-    sudo apt-get install -y wget unzip >>/dev/null
-}
-
 # download product
 wget -q -P /tmp $URL || {
-    echo "failed to download package form $URL"
+    echo "==> Failed to download package form $URL"
     exit 1
 }
 
