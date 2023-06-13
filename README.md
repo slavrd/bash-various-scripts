@@ -13,6 +13,12 @@ Installs hashicorp products.
 Installs Golang.
 
 `./install_golang.sh <golang_version> <OS> <ARCH>`
+
+## Install Mitm proxy
+
+Installs Mitm Proxy and starts it.
+
+`./install-mitm-proxy.sh`
   
 ## TF EXEC
 
