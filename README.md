@@ -25,3 +25,7 @@ Installs Mitm Proxy and starts it.
 Executes `terraform` passing to it all the arguments provided to the script. Also append a `-var-file` flag with filename based on the current terraform workspace e.g. `current_workspace_name.tfvars` .
 
 `./tf_exec.sh <plan|apply>`
+
+## Copy Container Images Between AWS ECR repositories
+
+Copies the container images between ECR repositories with the same tag. Configured by setting variables in the beginning of the script.
