@@ -29,3 +29,5 @@ Executes `terraform` passing to it all the arguments provided to the script. Als
 ## Copy Container Images Between AWS ECR repositories
 
 Copies the container images between ECR repositories with the same tag. Configured by setting variables in the beginning of the script.
+
+`./copy-cer-images.sh`

@@ -2,7 +2,7 @@
 # Copies container images between ECR repos that are named the same 
 # and are in different AWS accounts/regions.
 
-SOURCE_AWS_PROFILE_NAME="dev_dyn"
+SOURCE_AWS_PROFILE_NAME="dev"
 SOURCE_AWS_REGION="us-east-1"
 DEST_AWS_PROFILE_NAME="argox_dyn"
 DEST_AWS_REGION="us-east-1"
@@ -32,6 +32,7 @@ NEED_REPOS_NAMES=(
 "dai-gateway-api"
 "dai-text-processing-service"
 "dai-document-service")
+AUTO_APPROVE='false'
 
 for c in "aws" "jq" "docker"
 do
@@ -41,10 +42,21 @@ do
     }
 done
 
+function user_confirmation () {
+    read -p "${1} To confirm type 'yes': " a
+    if [ "${a}" != "yes" ]; then
+        echo "Aborted by user."
+        exit 0
+    fi
+}
+
 echo "Seting up source AWS profile..."
 export AWS_PROFILE=$SOURCE_AWS_PROFILE_NAME
 export SOURCE_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
 echo "Source account Id is ${SOURCE_ACCOUNT_ID}"
+echo "Source AWS region is ${SOURCE_AWS_REGION}"
+
+[ "${AUTO_APPROVE}" != 'true' ] && user_confirmation "Do you with to proceed with image pull?"
 
 echo "Seting up docker credentitals for source account..."
 aws ecr get-login-password --region ${SOURCE_AWS_REGION} | docker login --username AWS --password-stdin "${SOURCE_ACCOUNT_ID}.dkr.ecr.${SOURCE_AWS_REGION}.amazonaws.com"
@@ -59,6 +71,9 @@ echo "Seting up destination AWS profile..."
 export AWS_PROFILE=$DEST_AWS_PROFILE_NAME
 export DEST_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
 echo "Destination account Id is ${DEST_ACCOUNT_ID}"
+echo "Destination AWS region is ${DEST_AWS_REGION}"
+
+[ "${AUTO_APPROVE}" != 'true' ] && user_confirmation "Do you with to proceed with image push?"
 
 echo "Retaging local images..."
 for r in ${NEED_REPOS_NAMES[@]}
