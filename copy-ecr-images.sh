@@ -31,7 +31,11 @@ NEED_REPOS_NAMES=(
 "dai-object-detection-service"
 "dai-gateway-api"
 "dai-text-processing-service"
-"dai-document-service")
+"dai-document-service"
+"dai-stitching-service"
+"dai-notification-service"
+"dai-page-processor")
+
 AUTO_APPROVE='false'
 
 for c in "aws" "jq" "docker"
