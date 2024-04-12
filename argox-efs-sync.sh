@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Syncs EFS
+set -e
 
 if [ -z "${1}" ]; then
     echo  'usage: ./argox-efs-sync.sh <sync direction - ecs-k8s|k8s-ecs> [create-mounts]'
@@ -11,16 +12,35 @@ which rsync >/dev/null || {
   exit 1
 }
 
+which aws >/dev/null || {
+  echo  'ERR: rsync command is not installed'
+  exit 1
+}
+
+function getEFSName() {
+  [ -z "${1}" ] && {
+    echo 'No EFS name provided.'
+    return 1
+  }
+  aws efs describe-file-systems | jq -r --arg n ${1} '.FileSystems[] | select(.Name == $n).FileSystemId'
+}
+
 SYNC_DIRECTION=${1}
 
-export ARGOX_ECS_MOUNT_DIR=argox-efs-ecs
-export ARGOX_K8S_MOUNT_DIR=argox-efs-k8s
-export DRAW_ECS_MOUNT_DIR=draw-efs-ecs
-export DRAW_K8S_MOUNT_DIR=draw-efs-k8s
-export ARGOX_ECS_EFS_ID=fs-0bae549cc0ce5f86c
-export ARGOX_K8S_EFS_ID=fs-0f010496611d43c61
-export DRAW_ECS_EFS_ID=fs-09cd52071d5b8f864
-export DRAW_K8S_EFS_ID=fs-00616d8d24173cb63
+export ARGOX_ECS_MOUNT_DIR='argox-efs-ecs'
+export ARGOX_K8S_MOUNT_DIR='argox-efs-k8s'
+export DRAW_ECS_MOUNT_DIR='draw-efs-ecs'
+export DRAW_K8S_MOUNT_DIR='draw-efs-k8s'
+
+export ARGOX_ECS_EFS_NAME='/den-storage'
+export ARGOX_K8S_EFS_NAME='D02UE1-ARGOX-STORAGE'
+export DRAW_ECS_EFS_NAME='dai-storage'
+export DRAW_K8S_EFS_NAME='D02UE1-DRAW-STORAGE'
+
+export ARGOX_ECS_EFS_ID=$(getEFSName ${ARGOX_ECS_EFS_NAME})
+export ARGOX_K8S_EFS_ID=$(getEFSName ${ARGOX_K8S_EFS_NAME})
+export DRAW_ECS_EFS_ID=$(getEFSName ${DRAW_ECS_EFS_NAME})
+export DRAW_K8S_EFS_ID=$(getEFSName ${DRAW_K8S_EFS_NAME})
 
 
 if [ "${2}" == "create-mounts" ]; then
