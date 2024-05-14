@@ -69,16 +69,16 @@ if [ "${SYNC_DIRECTION}" == "ecs-k8s" ]; then
     echo "Syncing ${DRAW_ECS_MOUNT_DIR} -> ${DRAW_K8S_MOUNT_DIR} ..."
     sudo rsync -aP ${DRAW_ECS_MOUNT_DIR}/ ${DRAW_K8S_MOUNT_DIR}/
     # echo "Setting permissions for  ${ARGOX_K8S_MOUNT_DIR} and ${DRAW_K8S_MOUNT_DIR} ..."
-    # sudo chown -R 777 ${ARGOX_K8S_MOUNT_DIR}
-    # sudo chown -R 777 ${DRAW_K8S_MOUNT_DIR}
+    # sudo chmod -R 777 ${ARGOX_K8S_MOUNT_DIR}
+    # sudo chmod -R 777 ${DRAW_K8S_MOUNT_DIR}
 elif [ "${SYNC_DIRECTION}" == "k8s-ecs" ]; then
     echo "Syncing ${ARGOX_K8S_MOUNT_DIR} -> ${ARGOX_ECS_MOUNT_DIR} ..."
     sudo rsync -aP ${ARGOX_K8S_MOUNT_DIR}/ ${ARGOX_ECS_MOUNT_DIR}/
     echo "Syncing ${DRAW_K8S_MOUNT_DIR} -> ${DRAW_ECS_MOUNT_DIR} ..."
     sudo rsync -aP ${DRAW_K8S_MOUNT_DIR}/ ${DRAW_ECS_MOUNT_DIR}/
     # echo "Setting permissions for  ${ARGOX_ECS_MOUNT_DIR} and ${DRAW_ECS_MOUNT_DIR} ..."
-    # sudo chown -R 777 ${ARGOX_ECS_MOUNT_DIR}
-    # sudo chown -R 777 ${DRAW_ECS_MOUNT_DIR}
+    # sudo chmod -R 777 ${ARGOX_ECS_MOUNT_DIR}
+    # sudo chmod -R 777 ${DRAW_ECS_MOUNT_DIR}
 else
     echo "ERR: Unregognized sync directon: ${SYNC_DIRECTION}. Must be 'ecs-k8s' or 'k8s-ecs'."
     exit 1
