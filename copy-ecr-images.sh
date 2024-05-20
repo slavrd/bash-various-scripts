@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Copies container images between ECR repos that are named the same 
+# Copies container images between ECR repos that are named the same
 # and are in different AWS accounts/regions.
 
 SOURCE_AWS_PROFILE_NAME="dev"
 SOURCE_AWS_REGION="us-east-1"
 DEST_AWS_PROFILE_NAME="argox_dyn"
 DEST_AWS_REGION="us-east-1"
-IMAGE_TAG="latest"
+SRC_IMAGE_TAG="latest"
+DEST_IMAGE_TAG="latest"
 NEED_REPOS_NAMES=(
 "den-processor-sheet"
 "den-static-file-server"
@@ -54,11 +55,12 @@ function user_confirmation () {
     fi
 }
 
-echo "Seting up source AWS profile..."
+echo "Seting up source AWS profile: ${SOURCE_AWS_PROFILE_NAME} ..."
 export AWS_PROFILE=$SOURCE_AWS_PROFILE_NAME
 export SOURCE_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
-echo "Source account Id is ${SOURCE_ACCOUNT_ID}"
-echo "Source AWS region is ${SOURCE_AWS_REGION}"
+echo "Source account Id: ${SOURCE_ACCOUNT_ID}"
+echo "Source AWS region: ${SOURCE_AWS_REGION}"
+echo "Source images tag: ${SRC_IMAGE_TAG}"
 
 [ "${AUTO_APPROVE}" != 'true' ] && user_confirmation "Do you with to proceed with image pull?"
 
@@ -68,21 +70,22 @@ aws ecr get-login-password --region ${SOURCE_AWS_REGION} | docker login --userna
 echo "Pulling images..."
 for r in ${NEED_REPOS_NAMES[@]}
 do
-    docker pull "${SOURCE_ACCOUNT_ID}.dkr.ecr.${SOURCE_AWS_REGION}.amazonaws.com/${r}:${IMAGE_TAG}"
+    docker pull "${SOURCE_ACCOUNT_ID}.dkr.ecr.${SOURCE_AWS_REGION}.amazonaws.com/${r}:${SRC_IMAGE_TAG}"
 done
 
-echo "Seting up destination AWS profile..."
+echo "Seting up destination AWS profile: ${DEST_AWS_PROFILE_NAME} ..."
 export AWS_PROFILE=$DEST_AWS_PROFILE_NAME
 export DEST_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
-echo "Destination account Id is ${DEST_ACCOUNT_ID}"
-echo "Destination AWS region is ${DEST_AWS_REGION}"
+echo "Destination account Id: ${DEST_ACCOUNT_ID}"
+echo "Destination AWS region: ${DEST_AWS_REGION}"
+echo "Source images tag: ${DEST_IMAGE_TAG}"
 
 [ "${AUTO_APPROVE}" != 'true' ] && user_confirmation "Do you with to proceed with image push?"
 
 echo "Retaging local images..."
 for r in ${NEED_REPOS_NAMES[@]}
 do
-    docker tag "${SOURCE_ACCOUNT_ID}.dkr.ecr.${SOURCE_AWS_REGION}.amazonaws.com/${r}:${IMAGE_TAG}" "${DEST_ACCOUNT_ID}.dkr.ecr.${DEST_AWS_REGION}.amazonaws.com/${r}:${IMAGE_TAG}"
+    docker tag "${SOURCE_ACCOUNT_ID}.dkr.ecr.${SOURCE_AWS_REGION}.amazonaws.com/${r}:${SRC_IMAGE_TAG}" "${DEST_ACCOUNT_ID}.dkr.ecr.${DEST_AWS_REGION}.amazonaws.com/${r}:${DEST_IMAGE_TAG}"
 done
 
 echo "Seting up docker credentitals for destination account..."
@@ -91,5 +94,5 @@ aws ecr get-login-password --region ${DEST_AWS_REGION} | docker login --username
 echo "Pusing images..."
 for r in ${NEED_REPOS_NAMES[@]}
 do
-    docker push "${DEST_ACCOUNT_ID}.dkr.ecr.${DEST_AWS_REGION}.amazonaws.com/${r}:${IMAGE_TAG}"
+    docker push "${DEST_ACCOUNT_ID}.dkr.ecr.${DEST_AWS_REGION}.amazonaws.com/${r}:${DEST_IMAGE_TAG}"
 done
